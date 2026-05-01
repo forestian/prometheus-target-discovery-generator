@@ -1,0 +1,24 @@
+# Compiled binaries
+ptdgen
+ptdgen.exe
+*.exe
+
+# Build output
+/dist/
+/bin/
+
+# Generated example directory (created by ptdgen init)
+target-discovery-demo/
+
+# Claude Code local settings (contains local system paths)
+.claude/
+
+# OS-specific
+.DS_Store
+Thumbs.db
+
+# Editor
+.idea/
+.vscode/
+*.swp
+*.swo

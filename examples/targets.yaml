@@ -1,0 +1,39 @@
+targets:
+  - name: api-server-01
+    job: app-api
+    address: 10.10.10.11
+    port: 9100
+    scheme: http
+    metrics_path: /metrics
+    environment: production
+    team: platform
+    labels:
+      service: api
+      region: kr
+      role: backend
+
+  - name: worker-01
+    job: app-worker
+    address: 10.10.10.12
+    port: 9100
+    scheme: http
+    metrics_path: /metrics
+    environment: production
+    team: platform
+    labels:
+      service: worker
+      region: kr
+      role: worker
+
+  - name: db-exporter-01
+    job: app-database
+    address: 10.10.10.20
+    port: 9187
+    scheme: http
+    metrics_path: /metrics
+    environment: production
+    team: data
+    labels:
+      service: postgres
+      region: kr
+      role: primary
