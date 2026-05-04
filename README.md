@@ -1,107 +1,95 @@
 # ptdgen — Prometheus Target Discovery Generator
 
-`ptdgen` is a local CLI tool that generates Prometheus `file_sd_configs`-compatible
-scrape target configuration and Grafana Alloy `discovery.file` starter configs
-from a simple YAML or JSON target definition file.
-
-It is the MVP foundation for a future SaaS that manages Prometheus scrape targets
-for DevOps, SRE, and platform engineering teams.
+Generate Prometheus `file_sd_configs` and Grafana Alloy discovery configs from a single YAML source of truth.
 
 ---
 
-## Why ptdgen?
+## Demo
 
-Managing Prometheus `scrape_configs` by hand across multiple environments is
-error-prone and repetitive. `ptdgen` gives you:
-
-- A single source of truth for your scrape targets (one YAML / JSON file)
-- Validated, deterministic output on every run
-- Drop-in compatibility with Prometheus `file_sd_configs` and Grafana Alloy
-- A foundation for GitOps: commit targets, generate on CI, deploy output
+GIF demo coming soon.
 
 ---
 
-## Install / build
+## Quick Start
 
-**Requirements:** Go 1.21+
-
-```bash
-git clone https://github.com/sdfnj/ptdgen
-cd ptdgen
-go build -o ptdgen .
-```
-
-Or run without installing:
+**Download a prebuilt binary** from [GitHub Releases](https://github.com/forestian/prometheus-target-discovery-generator/releases):
 
 ```bash
-go run . <command>
-```
-
----
-
-## Install from GitHub Releases
-
-Download a prebuilt binary from the [GitHub Releases](https://github.com/forestian/prometheus-target-discovery-generator/releases) page.
-
-**Linux / macOS:**
-
-```bash
+# Linux / macOS
 tar -xzf ptdgen_<version>_<os>_<arch>.tar.gz
 chmod +x ptdgen
 ./ptdgen version
-```
 
-**Windows:**
-
-Download the Windows archive, extract it, and run:
-
-```
+# Windows — extract the archive and run:
 ptdgen.exe version
 ```
+
+**Or build from source** (Go 1.21+):
+
+```bash
+git clone https://github.com/forestian/prometheus-target-discovery-generator
+cd prometheus-target-discovery-generator
+go build -o ptdgen .
+./ptdgen version
+```
+
+---
+
+## Quick Demo
+
+```bash
+$ ptdgen generate --file ./targets.yaml --output ./generated
+Generating all output into ./generated ...
+Done. 3 target(s) processed.
+
+$ ls ./generated/
+prometheus-file-sd.json   alloy-discovery.alloy   scrape-config-example.yaml
+```
+
+---
+
+## Use Cases
+
+- Replace hand-edited `scrape_configs` with a validated, version-controlled YAML file
+- Bootstrap Grafana Alloy discovery configs for new environments in seconds
+- Validate scrape target definitions in CI before deploying Prometheus changes
+- Maintain a single source of truth across multiple Prometheus instances
+- Scaffold new monitoring projects with `ptdgen init`
 
 ---
 
 ## Commands
 
-### `ptdgen version`
-
-```
-ptdgen version
-# ptdgen version 0.1.0
-```
-
----
-
 ### `ptdgen init`
 
-Creates an example project directory with sample targets and pre-generated output.
+Scaffold a new project directory with sample targets and pre-generated output:
 
 ```bash
-ptdgen init --output ./target-discovery-demo
-ptdgen init --output ./target-discovery-demo --force   # overwrite existing
+ptdgen init --output ./my-targets
+ptdgen init --output ./my-targets --force   # overwrite existing
 ```
 
 Creates:
 
 ```
-target-discovery-demo/
+my-targets/
 ├── README.md
 ├── targets.yaml                         ← edit this
-├── targets.json                         ← edit this (JSON alternative)
+├── targets.json                         ← JSON alternative
 ├── generated/
-│   ├── prometheus-file-sd.json          ← Prometheus file_sd_configs input
-│   ├── alloy-discovery.alloy            ← Grafana Alloy starter config
-│   └── scrape-config-example.yaml       ← example Prometheus scrape_config
+│   ├── prometheus-file-sd.json
+│   ├── alloy-discovery.alloy
+│   └── scrape-config-example.yaml
 └── examples/
-    ├── prometheus.yml                   ← full example prometheus.yml
-    └── alloy.river                      ← full example Alloy river config
+    ├── prometheus.yml
+    └── alloy.river
 ```
 
 ---
 
 ### `ptdgen validate`
 
-Validates a target definition file and reports errors.
+Validate a target definition file and report errors:
 
 ```bash
 ptdgen validate --file ./targets.yaml
@@ -114,11 +102,11 @@ Exit code 0 on success, 1 on any validation error.
 
 ### `ptdgen generate`
 
-Reads and validates targets, then writes output files.
+Parse, validate, and write output files:
 
 ```bash
 # Generate all formats (default)
-ptdgen generate --file ./targets.yaml --output ./generated --format all
+ptdgen generate --file ./targets.yaml --output ./generated
 
 # Prometheus file_sd only
 ptdgen generate --file ./targets.yaml --output ./generated --format prometheus
@@ -130,8 +118,6 @@ ptdgen generate --file ./targets.yaml --output ./generated --format alloy
 ptdgen generate --file ./targets.yaml --output ./generated --force
 ```
 
-Flags:
-
 | Flag | Default | Description |
 |------|---------|-------------|
 | `--file` | (required) | Path to target definition file |
@@ -141,22 +127,21 @@ Flags:
 
 ---
 
-## Example workflow
+## Typical Workflow
 
 ```bash
 # 1. Scaffold a new project
 ptdgen init --output ./my-targets
 
-# 2. Edit targets
+# 2. Edit your targets
 $EDITOR ./my-targets/targets.yaml
 
 # 3. Validate
 ptdgen validate --file ./my-targets/targets.yaml
 
-# 4. Generate output
+# 4. Generate
 ptdgen generate --file ./my-targets/targets.yaml \
   --output ./my-targets/generated \
-  --format all \
   --force
 
 # 5. Copy generated/prometheus-file-sd.json to your Prometheus host
@@ -165,9 +150,7 @@ ptdgen generate --file ./my-targets/targets.yaml \
 
 ---
 
-## Target definition format
-
-### YAML (`targets.yaml`)
+## Target Definition Format
 
 ```yaml
 targets:
@@ -184,29 +167,11 @@ targets:
       region: kr
 ```
 
-### JSON (`targets.json`)
-
-```json
-{
-  "targets": [
-    {
-      "name": "api-server-01",
-      "job": "app-api",
-      "address": "10.10.10.11",
-      "port": 9100,
-      "scheme": "http",
-      "metrics_path": "/metrics",
-      "environment": "production",
-      "team": "platform",
-      "labels": { "service": "api", "region": "kr" }
-    }
-  ]
-}
-```
+JSON format is also supported — see [`examples/targets.yaml`](examples/targets.yaml).
 
 ---
 
-## Generated output examples
+## Example Output
 
 ### `prometheus-file-sd.json`
 
@@ -250,36 +215,35 @@ prometheus.remote_write "default" {
 
 ---
 
-## Validation rules
+## Validation Rules
 
-- `name` must not be empty
+- `name` must not be empty and must be unique across all targets
 - `job` must not be empty
 - `address` must not be empty
 - `port` must be between 1 and 65535
-- Duplicate target names → error
 - Duplicate `address:port` under the same `job` → error
 - Existing output files → error unless `--force`
 
 ---
 
-## MVP limitations
+## Limitations
 
-- No automatic target reloading; re-run `ptdgen generate` after changes
-- No Kubernetes integration
-- No Vault / secret management
-- No cloud provider integration
-- No authentication or multi-user support
-- No web UI or API server
+- Read-only and local-only — ptdgen never connects to or modifies Prometheus, Alloy, or any live system
+- No secrets, tokens, or credentials are read or written
+- Generated output should be reviewed before applying to production
+- No automatic target reloading — re-run `ptdgen generate` after changes
+- No Kubernetes, Vault, or cloud provider integration
 
 ---
 
-## Future roadmap (not yet implemented)
+## Roadmap
 
-- Web UI to manage scrape targets
-- REST API for target registration
-- Vault integration for secret injection
-- Kubernetes service discovery integration
-- GitOps export (auto-commit generated files)
-- Slack / PagerDuty alerts when targets change
-- Mimir / Prometheus integration
-- Team-based target ownership and RBAC
+- GitHub Actions example workflow for GitOps-style target management
+- Watch mode to regenerate on file change
+- Additional output formats (e.g. plain `scrape_configs` YAML block)
+- Multi-file target definitions
+- Improved validation errors with line number references
+
+---
+
+Part of the [Forestian Cloud Native Toolkit](https://github.com/forestian) — small CLI tools for Kubernetes, observability, GitOps, and platform engineering.
