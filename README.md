@@ -39,6 +39,28 @@ go run . <command>
 
 ---
 
+## Install from GitHub Releases
+
+Download a prebuilt binary from the [GitHub Releases](https://github.com/forestian/prometheus-target-discovery-generator/releases) page.
+
+**Linux / macOS:**
+
+```bash
+tar -xzf ptdgen_<version>_<os>_<arch>.tar.gz
+chmod +x ptdgen
+./ptdgen version
+```
+
+**Windows:**
+
+Download the Windows archive, extract it, and run:
+
+```
+ptdgen.exe version
+```
+
+---
+
 ## Commands
 
 ### `ptdgen version`
